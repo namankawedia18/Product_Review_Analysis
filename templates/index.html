@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product Review Analyzer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <p class="tag">Classical AI</p>
+      <h1>Product Review Analyzer</h1>
+      <p class="subtitle">Rule-based sentiment + fake review detection + genuine weighted rating.</p>
+    </section>
+
+    <section class="panel">
+      <form method="post" enctype="multipart/form-data">
+        <div class="mode-switch">
+          <label>
+            <input type="radio" name="source_mode" value="manual" {% if source_mode == 'manual' %}checked{% endif %}>
+            Manual Input
+          </label>
+          <label>
+            <input type="radio" name="source_mode" value="csv" {% if source_mode == 'csv' %}checked{% endif %}>
+            CSV Upload
+          </label>
+        </div>
+
+        <div class="input-grid">
+          <div class="field">
+            <label for="manual_reviews">Manual Reviews</label>
+            <textarea id="manual_reviews" name="manual_reviews" rows="8" placeholder="One review per line, format: rating|review text
+5|Excellent battery and smooth performance
+1|Worst purchase, very bad quality"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="csv_file">CSV File</label>
+            <input id="csv_file" type="file" name="csv_file" accept=".csv">
+            <p class="hint">Expected columns: <code>review_text</code>, <code>rating</code>.</p>
+          </div>
+        </div>
+
+        <button class="btn" type="submit">Analyze Reviews</button>
+      </form>
+    </section>
+
+    {% if errors %}
+    <section class="panel errors">
+      <h2>Input Errors</h2>
+      <ul>
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if summary %}
+    <section class="panel summary">
+      <h2>Final Product Rating Report</h2>
+      <div class="stats">
+        <article>
+          <h3>{{ summary.genuine_rating }}/5.0</h3>
+          <p>Genuine AI Rating</p>
+        </article>
+        <article>
+          <h3>{{ summary.raw_average }}/5.0</h3>
+          <p>Raw Average Rating</p>
+        </article>
+        <article>
+          <h3>{{ summary.total_reviews }}</h3>
+          <p>Total Reviews</p>
+        </article>
+        <article>
+          <h3>{{ summary.genuine_count }}</h3>
+          <p>Genuine Reviews</p>
+        </article>
+        <article>
+          <h3>{{ summary.suspicious_count }}</h3>
+          <p>Suspicious Reviews</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Per-Review Analysis</h2>
+      <div class="cards">
+        {% for row in detailed_results %}
+        <article class="review-card {% if row.label == 'Suspicious' %}suspicious{% else %}genuine{% endif %}">
+          <header>
+            <strong>{{ row.label }}</strong>
+            <span>{{ row.rating }}/5</span>
+          </header>
+          <p class="text">{{ row.review_text }}</p>
+          <p>Sentiment: <b>{{ row.sentiment }}</b> (+{{ row.positive_score }} / -{{ row.negative_score }})</p>
+          <p>Weight: <b>{{ row.weight }}</b></p>
+          {% if row.reasons %}
+          <ul>
+            {% for reason in row.reasons %}
+            <li>{{ reason }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+  </main>
+</body>
+</html>
