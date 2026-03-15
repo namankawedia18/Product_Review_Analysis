@@ -34,14 +34,16 @@ def analyze_all_reviews(reviews):
         # Step 1: Sentiment Analysis
         sentiment_result = analyze_sentiment(text)
         sentiment = sentiment_result["sentiment"]
+        pos_score = sentiment_result["positive_score"]
 
         # Step 2: Fake Detection
-        fake_result = detect_fake(text, rating, sentiment)
+        fake_result = detect_fake(text, rating, sentiment, pos_score)
 
         # Collect for rating calculation
         results.append({
             "rating": rating,
             "weight": fake_result["weight"],
+            "label": fake_result["label"],
             "is_suspicious": fake_result["is_suspicious"]
         })
 
@@ -67,14 +69,15 @@ def print_final_report(rating_result):
     print_separator()
     print("           FINAL PRODUCT RATING REPORT")
     print_separator()
-    print(f"  Total Reviews Analyzed : {rating_result['total_reviews']}")
-    print(f"  Genuine Reviews        : {rating_result['genuine_count']}")
-    print(f"  Suspicious Reviews     : {rating_result['suspicious_count']}")
-    print(f"  Raw Average Rating     : {rating_result['raw_average']} / 5.0")
-    print(f"  ✅ Genuine AI Rating   : {rating_result['genuine_rating']} / 5.0")
+    print(f"  Total Reviews Analyzed   : {rating_result['total_reviews']}")
+    print(f"  Genuine Reviews          : {rating_result['genuine_count']}")
+    print(f"  Slightly Suspicious      : {rating_result['slightly_suspicious_count']}")
+    print(f"  Suspicious Reviews       : {rating_result['suspicious_count']}")
+    print(f"  Raw Average Rating       : {rating_result['raw_average']} / 5.0")
+    print(f"  ✅ Genuine AI Rating     : {rating_result['genuine_rating']} / 5.0")
+    print(f"  📊 Recommendation        : {rating_result['recommendation']}")
     print_separator()
 
-    # Visual star display
     genuine = rating_result['genuine_rating']
     full_stars = int(genuine)
     half = "½" if (genuine - full_stars) >= 0.5 else ""

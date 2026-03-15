@@ -101,19 +101,25 @@ def run_pipeline(reviews):
         text = review["review_text"]
         rating = review["rating"]
 
+        # Step 1: Sentiment Analysis (threshold-based)
         sentiment_result = analyze_sentiment(text)
-        fake_result = detect_fake(text, rating, sentiment_result["sentiment"])
+        sentiment = sentiment_result["sentiment"]
+        pos_score = sentiment_result["positive_score"]
+
+        # Step 2: Fake Detection (threshold-based, now receives pos_score)
+        fake_result = detect_fake(text, rating, sentiment, pos_score)
 
         detailed_results.append(
             {
                 "review_text": text,
                 "rating": rating,
-                "sentiment": sentiment_result["sentiment"],
-                "positive_score": sentiment_result["positive_score"],
+                "sentiment": sentiment,
+                "positive_score": pos_score,
                 "negative_score": sentiment_result["negative_score"],
                 "matched_positive": sentiment_result["matched_positive"],
                 "matched_negative": sentiment_result["matched_negative"],
                 "label": fake_result["label"],
+                "suspicion_score": fake_result["suspicion_score"],
                 "weight": fake_result["weight"],
                 "reasons": fake_result["reasons"],
             }
@@ -123,6 +129,7 @@ def run_pipeline(reviews):
             {
                 "rating": rating,
                 "weight": fake_result["weight"],
+                "label": fake_result["label"],
                 "is_suspicious": fake_result["is_suspicious"],
             }
         )
